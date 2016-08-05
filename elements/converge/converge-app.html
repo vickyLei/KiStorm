@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="../../bower_components/polymer/polymer.html" rel="import">
+    <link href="../../elements/converge/converge-element.html" rel="import">
+    <link href="../../elements/converge/converge-comp-element.html" rel="import">
+    <script src="https://cdn.firebase.com/js/client/2.4.0/firebase.js"></script>
+    <link href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html" rel="import">
+    <link href="../../bower_components/paper-header-panel/paper-header-panel.html" rel="import">
+    <link href="../../bower_components/paper-toolbar/paper-toolbar.html" rel="import">
+    <link href="../../bower_components/paper-icon-button/paper-icon-button.html" rel="import">
+    <link href="../../bower_components/paper-material/paper-material.html" rel="import">
+    <link href="../../bower_components/paper-menu/paper-menu.html" rel="import">
+    <link href="../../bower_components/paper-item/paper-item.html" rel="import">
+    <link href="../../bower_components/paper-input/paper-input.html" rel="import">
+    <link href="../../bower_components/paper-input/paper-textarea.html" rel="import">
+    <link href="../../bower_components/paper-dialog/paper-dialog.html" rel="import">
+    <link href="../../bower_components/iron-icons/iron-icons.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase-collection.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase-document.html" rel="import">
+    <link href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html" rel="import" >
+</head>
+<dom-module id="converge-app">
+    <style>
+    .list {
+		padding: 0;
+ 		border-right: 1px solid #ccc;
+	}
+
+	.list paper-item {
+		min-height: 80px;
+		border-bottom: 1px solid #dedede;
+		background-color: #fafafa;
+	}
+
+	#convergeIntro {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 80px;
+        line-height: 80px;
+		border-bottom: 1px solid #ccc;
+	}
+
+    #introHeader {
+        display: inline-block;
+        text-align: center;
+        width: 75%;
+        margin: 0 auto;
+        max-width: none;
+        min-height: 80px;
+        font-size: 18pt;
+        font-family: 'Roboto', -apple-system, "Helvetica", sans-serif;
+    }
+
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+
+	paper-input {
+		margin: 0 4vw;
+		padding: 0;
+	}
+
+    paper-textarea {
+		margin: 0 8vw 0 4vw;
+		padding: 0;
+	}
+
+	paper-material {
+		background-color: #fff;
+		max-width: 640px;
+		width: 95%;
+		margin: 25px auto;
+		position: relative;
+	}
+
+	#diverges {
+		overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+		height: 89.5vh;
+	}
+
+	#diverges {
+		overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        @apply(--layout-horizontal);
+
+        @apply(--layout-around-justified);
+        @apply(--layout-wrap);
+	}
+
+    firebase-collection {
+        height: 0;
+        width: 0;
+        display: none;
+    }
+
+    @media (max-width:1279px) {
+        #diverges {
+            @apply(--layout-block);
+        }
+    }
+
+	paper-fab {
+	    position: absolute;
+	    background: #00BCD4;
+	    bottom: 1.5vh;
+	    right: 2vw;
+    }
+
+	.main-panel {
+		background-color: #eee;
+		/*height: 100vh;*/
+		overflow-y: hidden;
+	}
+
+	.task-empty paper-item {
+		text-align: center;
+		padding: 25px;
+		color: #6f6f6f;
+	}
+
+    #dUser {
+        width: 75vw;
+        display: inline-block;
+    }
+
+	paper-toolbar {
+		background:#D32F2F;
+	}
+
+    #compile {
+        display: inline;
+        /*float: right;*/
+        /*height: 56px;*/
+        background: #4DD0E1;
+        color: white;
+    }
+    #vote {
+        display: inline;
+        /*float: right;*/
+        /*height: 56px;*/
+        background: #4DD0E1;
+        color: white;
+    }
+
+    </style>
+    <template>
+        <div class="main-panel">
+
+            <firebase-document
+                id="showCompileRef"
+                location="{{showCompile_URL(dbref)}}"
+                data="{{showCompile}}"></firebase-document>
+
+            <paper-material id="convergeIntro" elevation="1">
+                <p id="introHeader">Converge on these ideas by voting!</p>
+                <paper-button id="compile" hidden="{{showCompile}}" on-tap="doCompile">Compile</paper-button>
+                <paper-button id="vote" hidden="{{!showCompile}}" on-tap="toggleCompile">Vote</paper-button>
+            </paper-material>
+            <paper-dialog id="emptyError">
+                <h2>The diverge idea is empty!</h2>
+                <paper-dialog-scrollable>
+                    You need to write an idea before you can add it!
+                </paper-dialog-scrollable>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Dismiss</paper-button>
+                </div>
+            </paper-dialog>
+
+            <firebase-document
+                id="counterRef"
+                location="{{counter_URL(dbref)}}"
+                data="{{counter}}"></firebase-document>
+
+            <div id="diverges">
+                <!-- <firebase-collection
+                    id="firebaseref"
+                    location="{{diverges_URL()}}"></firebase-collection> -->
+                <!-- <template is="dom-bind"> -->
+                <template is="dom-if" if="{{showCompile}}">
+                    <firebase-collection
+                        id="firebaseref"
+                        order-by-child="averageRating"
+                        location="{{diverges_URL(dbref)}}"
+                        data="{{divergesOrd}}"></firebase-collection>
+                    <template is="dom-if" if="{{!divergesOrd.length}}">
+                        <paper-material class="task-empty">
+                            <paper-item>No diverges have been written. Updates are Real-Time so stay tuned!</paper-item>
+                        </paper-material>
+                    </template>
+
+                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge">
+                        <script type="text/javascript">
+                            //console.log({{this.diverges}});
+                            // var comments = this.diverge.comments;
+                        </script>
+                        <converge-comp-element user="{{diverge.user}}" dbref="{{dbref}}" username="{{username}}" level="{{level}}" task="{{diverge.task}}" rid="{{diverge.rid}}" date="{{diverge.date}}" time="{{diverge.time}}" ratings="{{diverge.ratings}}" diverge="{{diverge}}"></converge-comp-element>
+                        <!-- <h1>[[diverge.__firebaseKey__]]</h1> -->
+                    </template>
+                </template>
+                <template is="dom-if" if="{{!showCompile}}">
+                    <firebase-collection
+                        id="firebaseref"
+                        order-by-child="time"
+                        location="{{diverges_URL(dbref)}}"
+                        data="{{diverges}}"></firebase-collection>
+                    <template is="dom-if" if="{{!diverges.length}}">
+                        <paper-material class="task-empty">
+                            <paper-item>No diverges have been written. Updates are Real-Time so stay tuned!</paper-item>
+                        </paper-material>
+                    </template>
+
+                    <template is="dom-repeat" items="{{diverges}}" as="diverge">
+                        <script type="text/javascript">
+                            //console.log({{this.diverges}});
+                            // var comments = this.diverge.comments;
+                        </script>
+                        <converge-element user="{{diverge.user}}" dbref="{{dbref}}" username="{{uid}}" level="{{level}}" task="{{diverge.task}}" rid="{{diverge.rid}}" date="{{diverge.date}}" time="{{diverge.time}}" ratings="{{diverge.ratings}}" diverge="{{diverge}}"></converge-element>
+                        <!-- <h1>[[diverge.__firebaseKey__]]</h1> -->
+                    </template>
+                </template>
+                <!-- </template> -->
+
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+Polymer({
+    is: "converge-app",
+    properties: {
+        uid: {
+            type: String,
+            value: ""
+        },
+        level: {
+            type: String,
+            value: ""
+        },
+        dbref: {
+            type: String,
+            value: ""
+        },
+        token: {
+            type: String,
+            value: ""
+        },
+        diverges: {
+            type: Object,
+            value: []
+        },
+        divergesOrd: {
+            type: Object,
+            value: []
+        },
+        // counter: {
+        //     type: Number,
+        //     value: 0
+        // }
+    },
+    ready: function () {
+        console.log("dom-ready");
+        var $compile = this.$.compile;
+        var $vote = this.$.vote;
+        if (this.level != "admin") {
+            $compile.style.display = "none";
+            $vote.style.display = "none";
+            this.$.introHeader.style.width = "100%";
+        }
+    },
+    counter_URL: function(dbref) {
+        return dbref+"/counter";
+    },
+    showCompile_URL: function(dbref) {
+        return dbref+"/showCompile";
+    },
+    diverges_URL: function(dbref) {
+        return dbref+"/diverges";
+    },
+    postDiverge: function(e) {  // Add a new task
+        var tsk = this.$.dIdea.value;
+        // Use JWT username
+        var usr = this.uid;
+        if (tsk=="") {
+            alert("Diverge is Empty!");
+            return;
+        }
+        if (!(this.level == "write" || this.level == "admin")) {
+            alert("You don't have acces to write ideas!");
+            return;
+        }
+        if (usr==""){
+            usr = "Anonymous";
+        }
+        this.$.dIdea.value = "";
+
+        var divergeData = {"task": tsk, "user":usr, "rid": this.counter+1, "date": new Date().toLocaleString(), "time": Date.now(), "comments": []};
+        var cRef = new Firebase(this.dbref);
+        cRef.update({"counter":this.counter+1});
+        this.$.firebaseref.add(divergeData);
+    },
+    toggleCompile: function(on) {
+        console.log(on);
+        if (on == 1) {
+            var dRef = new Firebase(this.showCompile_URL(this.dbref));
+            dRef.set(1);
+        } else {
+            var dRef = new Firebase(this.showCompile_URL(this.dbref));
+            dRef.set(0);
+        }
+    },
+    doCompile: function(e) {
+        // console.log(this.diverges);
+        // var keys = [];
+        // for (var key in this.diverges) {
+        //     keys.push(key);
+        // }
+        // console.log(keys);
+        // console.log(diverge.user);
+
+        for (var key in this.diverges) {
+            var diverge = this.diverges[key];
+            var ratings = diverge["ratings"];
+            var avgRate = 0;
+            var count = 0;
+            for (var rKey in ratings) {
+                rating = ratings[rKey]["slider"];
+                avgRate += rating;
+                count++;
+            }
+            avgRate /= count;
+            // console.log(avgRate);
+            // console.log(this.dbref+"/diverges/"+diverge.__firebaseKey__);
+            var dRef = new Firebase(this.dbref+"/diverges/"+diverge.__firebaseKey__);
+            dRef.update({"averageRating":avgRate});
+        }
+        this.toggleCompile(1);
+    },
+
+});
+</script>
+</html>

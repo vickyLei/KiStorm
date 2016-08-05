@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- This is for testing the diverge-app -->
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- 1. Load webcomponents-lite.min.js for polyfill support. -->
+    <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
+    <!-- 2. Use an HTML Import to bring in some elements. -->
+    <!-- <link href="../elements/diverge-app.html" rel="import"> -->
+    <link href="../elements/ki-app.html" rel="import">
+    <!-- <script src="./init.js"></script> -->
+
+    <style>
+    /* Reset defaults */
+    html, body, body div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, figure, footer, header, hgroup, menu, nav, section, time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        font-size: 100%;
+        vertical-align: baseline;
+        background: transparent;
+    }
+    body {
+        background: #fff;
+    }
+    </style>
+  </head>
+    <body fullbleed unresolved>
+        <script id="data" type="application/json">
+        {"targetSection":"hub-diverge","showLast":5,"dbref":"kilab","gidNumber":"1030","uid":"1000","name":"CMS Manager","accessLevel":"admin"}
+        </script>
+        <div fullbleed id="hub-diverge" style="height=100%;">
+            <ki-app dbref="kilab" uid="1000" level="admin" token="0"></ki-app>
+        </div>
+    </body>
+</html>

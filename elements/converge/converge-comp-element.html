@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="../../bower_components/polymer/polymer.html" rel="import">
+    <link href="../../elements/converge/converge-comment.html" rel="import">
+    <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="../../bower_components/paper-item/paper-item.html">
+    <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+    <link rel="import" href="../../bower_components/paper-input/all-imports.html">
+    <link rel="import" href="../../bower_components/paper-material/paper-material.html">
+    <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+    <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+    <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+    <link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+</head>
+
+<dom-module id="converge-comp-element">
+    <style>
+    /* CSS rules for your element */
+    .diverge {
+        padding: 10px;
+    }
+
+    /*paper-item:focused {
+        --paper-item-disabled-color: transparent;
+    }*/
+    /*paper-item:focused {
+        --no-bg-focus: {
+            background-color: inherit;
+        };
+        apply(--no-bg-focus);
+    }*/
+
+    paper-fab {
+        /*position: absolute;
+        bottom: 2vh;
+        right: 5%;*/
+        background: #4DD0E1;
+    }
+
+    .edit {
+        display: inline-block;
+        float: right;
+        margin-right: 2vw;
+    }
+
+    .done {
+        background: green;
+    }
+
+    .info {
+        font-style: italic;
+        font-size: 14px;
+        color: #696969;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding: 0;
+        margin: 0 2vw 0 1vw;
+        width: 75%;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 45px;
+    }
+
+    .commentCount {
+        font-style: italic;
+        font-size: 14px;
+        color: #696969;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding: 0;
+        margin: 0;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 45px;
+    }
+
+    .toggleComment {
+        display: inline-block;
+        font-family: 'Roboto';
+        font-weight: 300;
+        text-transform: capitalize;
+    }
+
+    paper-material {
+        background-color: #fff;
+        max-width: 640px;
+        min-width: 500px;
+        @apply(‑‑layout-flex-auto);
+        /*@apply(--layout-flex);*/
+        width: 75%;
+        /*width: 640px;*/
+        margin: 25px auto;
+        /*margin: 25px 25px;*/
+        position: relative;
+    }
+
+    @media (max-width: 1279px) {
+        paper-material {
+            background-color: #fff;
+            max-width: 640px;
+            min-width: 0;
+            width: 90%;
+            margin: 25px auto;
+            position: relative;
+            @apply(‑‑layout-flex-none);
+        }
+    }
+
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+
+    #noComments {
+        padding: 0;
+        margin: 0 0;
+        display: block;
+    }
+
+    paper-input {
+        margin: 0 2vw;
+    }
+    paper-textarea {
+        margin: 0 2vw 0 1vw;
+    }
+
+    #newComment {
+        width: 75%;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .addComment {
+        float: right;
+        display: inline-block;
+        margin-right: 2vw;
+        margin-top: 2vh;
+        vertical-align: middle;
+    }
+
+    .diverge-label {
+        /*width: 80%;
+        display: inline-block;*/
+        --paper-input-container-disabled: {
+            opacity: 1;
+        };
+    }
+
+    .rid {
+        font-style: italic;
+        font-size: 14px;
+        color: #696969;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding: 0 10px;
+        margin: 0 1vw 0 1vw;
+        border: 1px dashed #212121;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 30px;
+        --paper-item-min-height: 30px;
+    }
+
+    .vote-item {
+        display: inline-block;
+        padding-bottom: 0;
+        margin: 0;
+        min-height: 24px;
+        vertical-align: middle;
+    }
+
+    #ratingLabel {
+        font-style: italic;
+
+        color: #696969;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding: 0;
+        margin: 0;
+        display: inline-block;
+        vertical-align: middle;
+        min-height: 24px;
+        /*line-height: 45px;*/
+    }
+
+    #rating {
+        /*width: 75%;*/
+        display: block;
+
+    }
+
+    firebase-collection {
+        height: 0;
+        width: 0;
+        display: none;
+    }
+
+    </style>
+
+    <template>
+        <paper-material class="diverge" elevation="1">
+            <paper-textarea class="diverge-label" readonly="{{!editing}}" id="divergeText" value="{{task}}"></paper-textarea>
+            <paper-item class="rid">{{rid}}</paper-item>
+            <!-- <paper-item role="listitem" hidden="{{editing}}" id="task">{{task}}</paper-item>
+            <paper-input id="edit" hidden="{{!editing}}" value="{{task}}"></paper-input> -->
+            <!-- <paper-item class="info">{{date}}</paper-item> -->
+
+            <!-- <button on-tap="toggleComments">Show Comments</button> -->
+            <paper-button class="toggleComment" on-tap="toggleComments">[[commentToggleButtonTitle]]</paper-button>
+            <paper-item class="commentCount">({{commentKeys.length}})</paper-item>
+            <!-- <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
+            <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab> -->
+            <br />
+            <!-- Voting slider -->
+            <paper-item class="vote-item">Average Vote:</paper-item>
+            <paper-item id="ratingLabel">{{diverge.averageRating}}</paper-item>
+            <!-- <paper-slider pin id="rating" min="1" max="5" on-change="changeRating"></paper-slider> -->
+
+            <iron-collapse id="commentsCollapse" noAnimation>
+                <div>
+                    <paper-textarea id="newComment" label="New Comment..."></paper-textarea>
+                    <paper-fab class="addComment" icon="icons:add"   on-tap="addComment" mini></paper-fab>
+                    <!-- <firebase-collection
+                        id="commentsref"
+                        location="{{comments_URL(diverge.__firebaseKey__)}}"></firebase-collection> -->
+                    <!-- <paper-button on-tap="addComment">Post</paper-button> -->
+                        <!-- <template is="dom-if" if="{{!comments.length}}">
+                            <paper-item id="noComments">No comments have been written. Updates are Real-Time so stay tuned!</paper-item>
+                        </template> -->
+                    <template is="dom-repeat" items="{{getKeys(diverge.comments)}}" as="key">
+                        <converge-comment comment="{{getComment(key)}}" dbref="{{dbref}}" username="{{username}}" level="{{level}}" divergeref="{{getKey(diverge)}}" commentref="{{key}}"></converge-comment>
+                    </template>
+                </div>
+            </iron-collapse>
+        </paper-material> <!-- data bindings in local DOM -->
+    </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "converge-comp-element",
+    properties: {
+        // declare properties for the element's public API
+        user: {
+            type: String,
+            value: ""
+        },
+        username: {
+            type: String,
+            value: ""
+        },
+        level: {
+            type: String,
+            value: ""
+        },
+        task: {
+            type: String,
+            value: ""
+        },
+        rid: {
+            type: Number,
+            value: -1
+        },
+        date: {
+            type: String,
+            value: new Date().toLocaleString()
+        },
+        time: {
+            type: Number,
+            value: 0
+        },
+        editing: {
+            type: Boolean,
+            value: false
+        },
+        diverge: {
+            type: Object,
+            value: {}
+        },
+        dbref: {
+            type: String,
+            value: ""
+        },
+        commentsOpen: {
+            type: Boolean,
+            value: false
+        },
+        commentKeys: {
+            type: Array,
+            value: []
+        },
+        commentToggleButtonTitle: {
+            type: String,
+            value: "Show Comments"
+        },
+        ratings: {
+            type: Array,
+            value: []
+        },
+    },
+    ready: function () {
+
+    },
+    attached: function() {
+        this.async(function() {
+            // var $rating = this.$.rating;
+            // var $ratingsLbl = this.$.ratingLabel;
+            // console.log(this.username);
+            // var rating = 1;
+            // if (this.ratings != null) {
+            //     var userData = this.ratings[this.username];
+            //     if (userData != null) {
+            //         rating = this.ratings[this.username]["slider"];
+            //     } else {
+            //         console.log("No Data");
+            //         var ratingsData = {"slider": rating};
+            //         var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
+            //         var ratingsRef = new Firebase(editLoc);
+            //         ratingsRef.set(ratingsData);
+            //     }
+            // } else {
+            //     console.log("No Ratings");
+            //     var ratingsData = {"slider": rating};
+            //     var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
+            //     var ratingsRef = new Firebase(editLoc);
+            //     ratingsRef.set(ratingsData);
+            // }
+            //
+            // $rating.value = rating;
+            // $ratingsLbl.textContent = $rating.value;
+
+
+            // $rating.addEventListener('value-change', function() {
+            //     $ratingsLbl.textContent = $rating.value;
+            // });
+        },1)
+    },
+    doEdit: function(e) {
+        if ((this.level == "write" && this.username == this.user) || this.level == "admin") {
+            if (this.editing) {
+                // Update firebase
+                var editedTask = this.$.divergeText.value;
+                var editLoc = this.diverge_URL(this.diverge.__firebaseKey__);
+                var updateRef = new Firebase(editLoc);
+                updateRef.update({"task":editedTask});
+            }
+            this.editing=!this.editing;
+        }
+    },
+    toggleComments: function(e) {
+        if (!this.commentsOpen) {
+            this.commentToggleButtonTitle = "Hide Comments";
+        } else {
+            this.commentToggleButtonTitle = "Show Comments";
+        }
+        this.commentsOpen = !this.commentsOpen;
+        this.$.commentsCollapse.toggle();
+    },
+    diverge_URL: function(key) {
+        return this.dbref+"/diverges/"+key;
+    },
+    comments_URL: function(key) {
+        return this.dbref+"/diverges/"+key+"/comments";
+    },
+    ratings_URL: function(key) {
+        return this.dbref+"/diverges/"+key+"/ratings/"+this.username+"/";
+    },
+    getKey: function(dict) {
+        return dict.__firebaseKey__;
+    },
+    getKeys: function(dict) {
+        var keys = [];
+        for (var key in dict) {
+            keys.push(key);
+        }
+        this.commentKeys = keys;
+        return keys;
+    },
+    getComment: function(key) {
+        var cmts = this.diverge.comments;
+        if (cmts) {
+            var cmt = cmts[key];
+            //console.log(cmt);
+            return cmt;
+        }
+        return;
+    },
+    addComment: function(e) {
+        // console.log(this.diverge.__firebaseKey__);
+        // console.log(this.diverge.comments.keys);
+        var cmt = this.$.newComment.value;
+        // Use JWT username
+        //var usr = this.$.dUser.value;
+        var usr = this.username;
+        if (cmt=="") {
+            alert("Comment is Empty!");
+            //this.$.emptyError.open();
+            return;
+        }
+        if (!(this.level == "write" || this.level == "admin")) {
+            alert("You don't have acces to write comments!");
+            return;
+        }
+        if (usr==""){
+            usr = "Anonymous";
+        }
+        this.$.newComment.value = "";
+        var commentData = {"cmt": cmt, "comment_writer":usr, "editing":false, "time": Date.now()};
+        var editLoc = this.comments_URL(this.diverge.__firebaseKey__);
+        var commentsRef = new Firebase(editLoc);
+        commentsRef.push(commentData);
+        // this.$.commentsref.add(commentData);
+    },
+    // changeRating: function(e) {
+    //     // console.log("changed");
+    //     var $rating = this.$.rating;
+    //     var $ratingsLbl = this.$.ratingLabel;
+    //     $ratingsLbl.textContent = $rating.value;
+    //     var ratingsData = {"slider": $rating.value};
+    //     var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
+    //     var ratingsRef = new Firebase(editLoc);
+    //     ratingsRef.set(ratingsData);
+    // }
+});
+</script>
+</html>

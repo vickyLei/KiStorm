@@ -1,0 +1,47 @@
+{
+  "name": "KiStorm",
+  "homepage": "https://github.com/Knowinnovation/kistorm",
+  "authors": [
+    "Drew Dunne <drew@drewsdunne.com>"
+  ],
+  "description": "",
+  "main": "polymer.html",
+  "moduleType": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "app-layout-templates": "polymerelements/app-layout-templates",
+    "iron-icons": "polymerelements/iron-icons#~1.0.3",
+    "iron-input": "PolymerElements/iron-input#^1.0.0",
+    "paper-button": "PolymerElements/paper-button#^1.0.13",
+    "paper-checkbox": "polymerelements/paper-checkbox#^1.0.1",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.9",
+    "paper-fab": "polymerelements/paper-fab#~1.0.2",
+    "paper-input": "PolymerElements/paper-input#~1.1.3",
+    "polymer": "Polymer/polymer#^1.0.0",
+    "pubnub-element": "~4.0.0",
+    "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
+    "iron-dropdown": "PolymerElements/iron-dropdown#^1.5.1",
+    "sketchpad": "^0.1.0",
+    "app-layout": "PolymerElements/app-layout#^0.10.1",
+    "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.6",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.6",
+    "polymerfire": "firebase/polymerfire#^0.9.4",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.3.2",
+    "paper-radio-button": "PolymerElements/paper-radio-button#^1.2.1",
+    "paper-radio-group": "PolymerElements/paper-radio-group#^1.2.0",
+    "firebase-element": "GoogleWebComponents/firebase-element#^1.0.15",
+    "paper-listbox": "polymerelements/paper-listbox#^1.1.2",
+    "paper-slider": "PolymerElements/paper-slider#^1.0.11"
+  },
+  "resolutions": {
+    "firebase": "^2.3.1",
+    "iron-dropdown": "^1.5.1"
+  }
+}

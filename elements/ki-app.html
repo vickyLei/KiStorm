@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="../bower_components/polymer/polymer.html" rel="import">
+    <link href="../bower_components/app-layout/app-layout.html" rel="import" />
+    <link href="../bower_components/paper-toolbar/paper-toolbar.html" rel="import" />
+    <link href="../bower_components/iron-icons/iron-icons.html" rel="import">
+    <!-- <link href="../bower_components/iron-icon/iron-icon.html" rel="import"> -->
+    <link href="../bower_components/paper-icon-button/paper-icon-button.html" rel="import" />
+    <link href="../bower_components/paper-menu/paper-menu.html" rel="import" />
+    <link href="../bower_components/paper-material/paper-material.html" rel="import" />
+    <link href="../bower_components/paper-item/paper-item.html" rel="import" />
+    <link href="../bower_components/paper-input/paper-input.html" rel="import" />
+    <link href="../bower_components/paper-header-panel/paper-header-panel.html" rel="import" />
+    <link href="../bower_components/paper-button/paper-button.html" rel="import" />
+    <link href="../bower_components/paper-dialog/paper-dialog.html" rel="import" />
+    <link href="../bower_components/paper-listbox/paper-listbox.html" rel="import" />
+    <link href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html" rel="import" />
+    <link href="../bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html" rel="import" />
+    <link href="../bower_components/paper-radio-button/paper-radio-button.html" rel="import" />
+    <link href="../bower_components/paper-radio-group/paper-radio-group.html" rel="import" />
+    <link href="../bower_components/firebase-element/firebase-collection.html" rel="import" />
+    <link href="../bower_components/firebase-element/firebase-document.html" rel="import" />
+    <link href="../elements/diverge/diverge-app.html" rel="import" />
+    <link href="../elements/converge/converge-app.html" rel="import" />
+    <!-- <link href="../bower_components/paper-icon-button/paper-icon-button-light.html" rel="import" /> -->
+</head>
+<dom-module id="ki-app">
+    <style>
+    app-toolbar {
+        /*background-color: #4285f4;*/
+        background: #3896AF;
+        color: #fff;
+        margin: 0 0;
+        font-family: -apple-system, 'Helvetica';
+    }
+    .drawer-toolbar {
+        background: #3896AF;
+        color: #fff;
+        margin: 0 0;
+        font-family: -apple-system, 'Helvetica';
+    }
+    paper-menu paper-item {
+        cursor: pointer;
+    }
+
+    .no-ws {
+		background-color: #fff;
+		max-width: 640px;
+		width: 95%;
+		margin: 25px auto;
+		position: relative;
+	}
+
+    .app-container {
+        background: #eee;
+        height: 100vh;
+        /*overflow-y: hidden;*/
+    }
+
+    .no-ws paper-item {
+		text-align: center;
+		padding: 25px;
+		color: #6f6f6f;
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+	}
+    #copyList paper-item {
+        cursor: pointer;
+    }
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+    </style>
+    <template>
+        <firebase-collection
+            id="wsquery"
+            order-by-child="dateCreated"
+            location="https://ki-apps.firebaseio.com/[[dbref]]/workshops"
+            data="{{workshops}}">
+        </firebase-collection>
+        <firebase-document
+            id="selectedwsquery"
+            location="https://ki-apps.firebaseio.com/[[dbref]]/selectedWS"
+            data="{{selectedWS}}">
+        </firebase-document>
+        <firebase-document
+            id="divergeExistsRef"
+            location="https://ki-apps.firebaseio.com/[[dbref]]/divergeExists"
+            data="{{divergeExists}}">
+        </firebase-document>
+
+        <div class="app-container">
+            <app-toolbar>
+                <paper-icon-button icon="menu" on-tap="toggleDrawer"></paper-icon-button>
+                <div main-title>KiApps</div>
+            </app-toolbar>
+
+            <!-- Diverge/Converge Embed -->
+            <template is="dom-if" if="{{!workshops.length}}">
+                <paper-material class="no-ws">
+                    <paper-item>No workshops have been created. Use the sidebar to add a workshop!</paper-item>
+                </paper-material>
+            </template>
+            <div id="embedTarget">
+
+            </div>
+
+            <!-- App Drawer and Dialog -->
+            <app-drawer id="wsDrawer">
+                <paper-toolbar class="drawer-toolbar">
+                    <div class="title">Workshops</div>
+                </paper-toolbar>
+                <paper-menu id="wsMenu" selected="[[selectedWS]]" on-iron-select="menuSelected">
+                <!-- <paper-menu id="wsMenu" selected="{{selectedWS}}"> -->
+                    <template is="dom-repeat" items="{{workshops}}" as="ws">
+                        <paper-item id="[[ws.id]]">[[ws.name]]</paper-item>
+                    </template>
+                </paper-menu>
+                <hr />
+                <paper-button on-tap="openNewWS">Create New...</paper-button>
+            </app-drawer>
+            <paper-dialog id="newWSDialog" with-backdrop>
+                <h2>Create a New Workshop</h2>
+                <paper-radio-group id="wsTypeGroup" selected="diverge" on-iron-select="changedRadio">
+                    <paper-radio-button name="diverge">Diverge</paper-radio-button>
+                    <paper-radio-button name="converge" disabled="[[!divergeExists]]">Converge</paper-radio-button>
+                </paper-radio-group>
+                <div hidden="{{convergeSelected}}">
+                    <!-- <paper-item>Choose a Diverge to copy from:</paper-item> -->
+                    <!-- <paper-dialog-scrollable> -->
+                    <paper-dropdown-menu-light label="Copy from...">
+                        <paper-menu id="copyList" class="dropdown-content">
+                        <!-- <paper-listbox id="copyList"> -->
+                            <template is="dom-repeat" items="{{divergeCopies}}" as="div">
+                                <paper-item name="[[div.id]]">[[div.name]]</paper-item>
+                            </template>
+                        <!-- </paper-listbox> -->
+                        </paper-menu>
+                    </paper-dropdown-menu-light>
+                    <!-- </paper-dialog-scrollable> -->
+                </div>
+                <paper-input id="wsName" label="Workshop name..."></paper-input>
+                <div class="buttons">
+                    <!-- <paper-button dialog-dismiss>Cancel</paper-button> -->
+                    <paper-button dialog-confirm autofocus on-tap="createNewWS">Create</paper-button>
+                </div>
+            </paper-dialog>
+        </div>
+    </template>
+</dom-module>
+<script>
+Polymer({
+    is: "ki-app",
+    properties: {
+        uid: String,
+        level: String,
+        dbref: String,
+        token: String,
+
+        workshops: {
+            type: Object,
+            observer: 'wsChanged'
+        },
+        selectedWS: {
+            type: String,
+            observer: 'selectedChanged'
+        },
+        divergeExists: Boolean,
+
+        convergeSelected: {
+            type: Boolean,
+            value: true,
+        },
+        divergeCopies: Array,
+    },
+    toggleDrawer: function() {
+        this.$.wsDrawer.toggle();
+    },
+    info: function() {
+        console.log(this.uid);
+        console.log(this.dbref);
+        console.log(this.level);
+        console.log(this.selectedWS);
+        console.log(this.workshops);
+    },
+    wsChanged: function() {
+        // console.log(this.workshops.length == 0);
+        if (this.workshops.length == 0 || this.workshops.length == null) {
+            $('#embedTarget').empty();
+        } else {
+            this.menuSelected();
+        }
+    },
+    selectedChanged: function(newData, oldData) {
+        // console.log(newData);
+        var $wsMenu = this.$.wsMenu;
+        $wsMenu.select(newData);
+
+        // Change embedded
+        var $selected = $wsMenu.selectedItem;
+        var ws = this.workshops[newData];
+        this.selectWS(ws);
+    },
+    menuSelected: function(e) {
+        var ref = new Firebase("https://ki-apps.firebaseio.com/"+this.dbref);
+        ref.update({"selectedWS":this.$.wsMenu.selected});
+    },
+    selectWS: function(ws) {
+        // console.log(ws);
+        console.log(this.workshops);
+        if (ws) {
+            var $embedTarget = this.$.embedTarget;
+            if (ws.type == "diverge") {
+                var divergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
+
+                $('#embedTarget').html('<diverge-app dbref="'+divergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'"></diverge-app>');
+            } else if (ws.type == "converge") {
+                var convergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
+
+                $('#embedTarget').html('<converge-app dbref="'+convergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'"></converge-app>');
+            }
+        }
+    },
+    openNewWS: function() {
+        this.$.newWSDialog.open();
+    },
+    createNewWS: function() {
+        // this.info();
+        var name = this.$.wsName.value;
+        var id = name.replace(/\s+/g, '-').toLowerCase();
+        // Use JWT username
+        var type = this.$.wsTypeGroup.selected;
+        var diverges = [];
+        var counter = 0;
+        if (type == 'converge') {
+            // Copy Diverges
+            var copyID = this.$.copyList.selected;
+            console.log(copyID);
+            if (copyID != null) {
+                diverges = this.workshops[copyID].diverges;
+                counter = this.workshops[copyID].counter
+            } else {
+                alert("No Diverge to copy from!");
+                return;
+            }
+        }
+        var usr = this.uid;
+        if (name=="") {
+            alert("Group name is Empty!");
+            return;
+        }
+        if (!(this.level == "admin")) {
+            alert("You don't have acces to make new groups!");
+            return;
+        }
+        if (usr == ""){
+            usr = "Anonymous";
+        }
+        this.$.wsName.value = "";
+
+        var wsData = {"type": type, "user":usr, "id": id,"name": name, "dateCreated": Date.now(), "counter": counter, "diverges":diverges};
+        var response = this.$.wsquery.add(wsData);
+        console.log(response);
+        if (response) {
+            var ref = new Firebase("https://ki-apps.firebaseio.com/"+this.dbref);
+            ref.update({"divergeExists":true});
+        }
+    },
+    changedRadio: function() {
+        var type = this.$.wsTypeGroup.selected;
+        if (type == 'converge') {
+            this.convergeSelected = false;
+            var divs = [];
+            for (var key in this.workshops) {
+                var elm = this.workshops[key];
+                console.log(elm.type);
+                if (elm.type == 'diverge') {
+                    divs.push(elm);
+                }
+            }
+            this.divergeCopies = divs;
+            console.log(this.divergeCopies);
+        } else {
+            this.convergeSelected = true;
+        }
+    }
+});
+</script>
+</html>

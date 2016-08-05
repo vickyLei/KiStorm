@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="../../bower_components/polymer/polymer.html" rel="import">
+    <!-- <script src="https://cdn.firebase.com/js/client/2.4.0/firebase.js"></script> -->
+    <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../../bower_components/paper-input/all-imports.html">
+    <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+    <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+    <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+</head>
+
+<dom-module id="converge-comment">
+    <style>
+    /* CSS rules for your element */
+    .diverge {
+        padding: 10px;
+    }
+
+    /*paper-item:focused {
+        --paper-item-disabled-color: transparent;
+    }*/
+    /*paper-item:focused {
+        --no-bg-focus: {
+            background-color: inherit;
+        };
+        apply(--no-bg-focus);
+    }*/
+
+    paper-fab {
+        /*position: absolute;
+        bottom: 2vh;
+        right: 5%;*/
+        background: #4DD0E1;
+    }
+
+    .edit {
+        display: inline-block;
+        float: right;
+        margin-right: 2vw;
+    }
+
+    .done {
+        background: green;
+    }
+
+    .info {
+        font-style: italic;
+        font-size: 14px;
+        color: #696969;
+        padding-top: 0;
+        padding-bottom: 0;
+        width: 75%;
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 45px;
+    }
+
+    paper-material {
+        background-color: #fff;
+        max-width: 640px;
+        min-width: 500px;
+        @apply(‑‑layout-flex-auto);
+        /*@apply(--layout-flex);*/
+        width: 75%;
+        /*width: 640px;*/
+        margin: 25px auto;
+        /*margin: 25px 25px;*/
+        position: relative;
+    }
+
+    @media (max-width: 1279px) {
+        paper-material {
+            background-color: #fff;
+            max-width: 640px;
+            min-width: 0;
+            width: 90%;
+            margin: 25px auto;
+            position: relative;
+            @apply(‑‑layout-flex-none);
+        }
+    }
+
+    .info {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+
+    #noComments {
+        padding: 0;
+        margin: 0 0;
+        display: block;
+    }
+
+    paper-input {
+        margin: 0 2vw;
+    }
+    paper-textarea {
+        margin: 0 2vw 0 1vw;
+    }
+
+    #edit {
+        color: gray;
+    }
+    #delete {
+        color: red;
+    }
+    paper-button {
+        font-size: 10pt;
+        font-family: 'Roboto';
+        text-transform: none;
+        --paper-button-ink-color: gray;
+    }
+
+    #dComment {
+        --paper-input-container-disabled: {
+            opacity: 1;
+        };
+    }
+
+    firebase-collection {
+        height: 0;
+        width: 0;
+        display: none;
+    }
+
+    </style>
+
+    <template>
+        <paper-textarea id="dComment" readonly="{{!editing}}" value="{{getText(comment)}}"></paper-textarea>
+        <paper-button id="edit" on-tap="doEdit">[[editingTitle]]</paper-button>
+        <paper-button id="delete" on-tap="doDelete" hidden="{{!editing}}">Delete</paper-button>
+    </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "converge-comment",
+    properties: {
+        editing: {
+            type: Boolean,
+            value: false
+        },
+        comment: {
+            type: Object,
+            value: {}
+        },
+        username: {
+            type: String,
+            value: ""
+        },
+        level: {
+            type: String,
+            value: ""
+        },
+        dbref: {
+            type: String,
+            value: ""
+        },
+        divergeref: {
+            type: String,
+            value: ""
+        },
+        commentref: {
+            type: String,
+            value: ""
+        },
+        editingTitle: {
+            type: String,
+            value: "Edit"
+        }
+    },
+    canEdit: function(dict) {
+        if (this.level == "admin") return true;
+        if (this.username == dict.comment_writer) return true;
+        return false;
+    },
+    doEdit: function(e) {
+        if ((this.level == "write" && this.username == this.comment.comment_writer) || this.level == "admin") {
+            if (!this.editing) {
+                this.editingTitle = "Done";
+            } else {
+                this.editingTitle = "Edit";
+                // Update firebase
+                var editedCmt = this.$.dComment.value;
+                var editLoc = this.dbref+"/diverges/"+this.divergeref+"/comments/"+this.commentref;
+                var updateRef = new Firebase(editLoc);
+                updateRef.update({"cmt":editedCmt});
+            }
+            this.editing=!this.editing;
+        }
+    },
+    doDelete: function(e) {
+        if (this.level != "admin") return;
+        var removeLoc = this.dbref+"/diverges/"+this.divergeref+"/comments/"+this.commentref;
+        var removeRef = new Firebase(removeLoc);
+        removeRef.remove();
+    },
+    getText: function(dict){
+        return dict.cmt;
+    },
+  });
+</script>
+</html>

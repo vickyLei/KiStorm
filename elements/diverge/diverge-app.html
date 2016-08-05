@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="../../bower_components/polymer/polymer.html" rel="import">
+    <link href="../../elements/diverge/diverge-element.html" rel="import">
+    <!-- <script src="https://cdn.firebase.com/js/client/2.4.0/firebase.js"></script> -->
+    <link href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html" rel="import">
+    <link href="../../bower_components/paper-header-panel/paper-header-panel.html" rel="import">
+    <link href="../../bower_components/paper-toolbar/paper-toolbar.html" rel="import">
+    <link href="../../bower_components/paper-icon-button/paper-icon-button.html" rel="import">
+    <link href="../../bower_components/paper-material/paper-material.html" rel="import">
+    <link href="../../bower_components/paper-menu/paper-menu.html" rel="import">
+    <link href="../../bower_components/paper-item/paper-item.html" rel="import">
+    <link href="../../bower_components/paper-input/paper-input.html" rel="import">
+    <link href="../../bower_components/paper-input/paper-textarea.html" rel="import">
+    <link href="../../bower_components/paper-dialog/paper-dialog.html" rel="import">
+    <link href="../../bower_components/iron-icons/iron-icons.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase-collection.html" rel="import">
+    <link href="../../bower_components/firebase-element/firebase-document.html" rel="import">
+    <link href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html" rel="import" >
+</head>
+<dom-module id="diverge-app">
+    <style>
+    .list {
+		padding: 0;
+ 		border-right: 1px solid #ccc;
+	}
+
+	.list paper-item {
+		min-height: 80px;
+		border-bottom: 1px solid #dedede;
+		background-color: #fafafa;
+	}
+
+	#divergeEntry {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 80px;
+		border-bottom: 1px solid #ccc;
+	}
+
+    /*paper-item {
+        --paper-item-focused: none;
+    }*/
+
+	paper-input {
+		margin: 0 4vw;
+		padding: 0;
+	}
+
+    paper-textarea {
+		margin: 0 8vw 0 4vw;
+		padding: 0;
+	}
+
+	paper-material {
+		background-color: #fff;
+		max-width: 640px;
+		width: 95%;
+		margin: 25px auto;
+		position: relative;
+	}
+
+	#diverges {
+		overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+		height: 89.5vh;
+	}
+
+	#diverges {
+		overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        @apply(--layout-horizontal);
+
+        @apply(--layout-around-justified);
+        @apply(--layout-wrap);
+	}
+
+    firebase-collection {
+        height: 0;
+        width: 0;
+        display: none;
+    }
+
+    @media (max-width:1279px) {
+        #diverges {
+            @apply(--layout-block);
+        }
+    }
+
+	paper-fab {
+	    position: absolute;
+	    background: #00BCD4;
+	    bottom: 1.5vh;
+	    right: 2vw;
+    }
+
+	.main-panel {
+		background-color: #eee;
+		/*height: 100vh;*/
+		overflow-y: hidden;
+	}
+
+	.task-empty paper-item {
+		text-align: center;
+		padding: 25px;
+		color: #6f6f6f;
+	}
+
+    #dUser {
+        width: 75vw;
+        display: inline-block;
+    }
+
+	paper-toolbar {
+		background:#D32F2F;
+	}
+
+    </style>
+    <template>
+        <div class="main-panel">
+            <!-- To create a new Todo -->
+            <paper-material id="divergeEntry" elevation="2">
+                <!-- <paper-input id="dIdea" label="Diverge Idea"></paper-input> -->
+                <paper-textarea id="dIdea" label="New Diverge..."></paper-textarea>
+                <!-- <paper-input id="dUser" char-counter label="Username" maxlength="100"></paper-input> -->
+                <paper-fab icon="icons:add" mini on-tap="postDiverge"></paper-fab>
+            </paper-material>
+            <paper-dialog id="emptyError">
+                <h2>The diverge idea is empty!</h2>
+                <paper-dialog-scrollable>
+                    You need to write an idea before you can add it!
+                </paper-dialog-scrollable>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Dismiss</paper-button>
+                </div>
+            </paper-dialog>
+
+            <firebase-document
+                id="counterRef"
+                location="{{counter_URL(dbref)}}"
+                data="{{counter}}"></firebase-document>
+
+            <div id="diverges">
+                <!-- <firebase-collection
+                    id="firebaseref"
+                    location="{{diverges_URL()}}"></firebase-collection> -->
+                <!-- <template is="dom-bind"> -->
+                    <firebase-collection
+                        id="firebaseref"
+                        order-by-child="time"
+                        location="{{diverges_URL(dbref)}}"
+                        data="{{diverges}}"></firebase-collection>
+                    <template is="dom-if" if="{{!diverges.length}}">
+                        <paper-material class="task-empty">
+                            <paper-item>No diverges have been written. Updates are Real-Time so stay tuned!</paper-item>
+                        </paper-material>
+                    </template>
+
+                    <template is="dom-repeat" items="{{diverges}}" as="diverge">
+                        <script type="text/javascript">
+                            //console.log({{this.diverges}});
+                            // var comments = this.diverge.comments;
+                        </script>
+                        <diverge-element user="{{diverge.user}}" dbref="{{dbref}}" uid="{{uid}}" level="{{level}}" task="{{diverge.task}}" rid="{{diverge.rid}}" time="{{diverge.time}}" diverge="{{diverge}}"></diverge-element>
+                        <!-- <h1>[[diverge.__firebaseKey__]]</h1> -->
+                    </template>
+                <!-- </template> -->
+
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+Polymer({
+    is: "diverge-app",
+    properties: {
+        uid: String,
+        level: String,
+        dbref: String,
+        token: String,
+
+        diverges: Array,
+        counter: Number,
+    },
+    counter_URL: function(dbref) {
+        return dbref+"/counter";
+    },
+    diverges_URL: function(dbref) {
+        return dbref+"/diverges";
+    },
+    postDiverge: function(e) {  // Add a new task
+        var tsk = this.$.dIdea.value;
+        // Use JWT username
+        var usr = this.uid;
+        if (tsk=="") {
+            alert("Diverge is Empty!");
+            return;
+        }
+        if (!(this.level == "write" || this.level == "admin")) {
+            alert("You don't have acces to write ideas!");
+            return;
+        }
+        if (usr==""){
+            usr = "Anonymous";
+        }
+        this.$.dIdea.value = "";
+
+        var divergeData = {"task": tsk, "user":usr, "rid": this.counter+1, "time": Date.now(), "comments": []};
+        var cRef = new Firebase(this.dbref);
+        cRef.update({"counter":this.counter+1});
+        this.$.firebaseref.add(divergeData);
+    },
+
+});
+</script>
+</html>
