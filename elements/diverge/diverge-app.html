@@ -124,9 +124,9 @@
             <!-- To create a new Todo -->
             <paper-material id="divergeEntry" elevation="2">
                 <!-- <paper-input id="dIdea" label="Diverge Idea"></paper-input> -->
-                <paper-textarea id="dIdea" label="New Diverge..."></paper-textarea>
+                <paper-textarea id="dIdea" on-change="dIdeaChanged" label="New Diverge..."></paper-textarea>
                 <!-- <paper-input id="dUser" char-counter label="Username" maxlength="100"></paper-input> -->
-                <paper-fab icon="icons:add" mini on-tap="postDiverge"></paper-fab>
+                <paper-fab hidden="{{!showAdd}}" icon="icons:done" mini on-tap="postDiverge"></paper-fab>
             </paper-material>
             <paper-dialog id="emptyError">
                 <h2>The diverge idea is empty!</h2>
@@ -184,6 +184,11 @@ Polymer({
 
         diverges: Array,
         counter: Number,
+
+        showAdd: {
+            type: Boolean,
+            value: false
+        },
     },
     counter_URL: function(dbref) {
         return dbref+"/counter";
@@ -191,11 +196,19 @@ Polymer({
     diverges_URL: function(dbref) {
         return dbref+"/diverges";
     },
+    dIdeaChanged: function(e) {
+        var txt = this.$.dIdea.value;
+        if (txt == "" || txt == null) {
+            this.showAdd = false;
+        } else {
+            this.showAdd = true;
+        }
+    },
     postDiverge: function(e) {  // Add a new task
         var tsk = this.$.dIdea.value;
         // Use JWT username
         var usr = this.uid;
-        if (tsk=="") {
+        if (tsk == "" || tsk == null) {
             alert("Diverge is Empty!");
             return;
         }
@@ -207,6 +220,7 @@ Polymer({
             usr = "Anonymous";
         }
         this.$.dIdea.value = "";
+        this.showAdd = false;
 
         var divergeData = {"task": tsk, "user":usr, "rid": this.counter+1, "time": Date.now(), "comments": []};
         var cRef = new Firebase(this.dbref);
