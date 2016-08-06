@@ -86,14 +86,14 @@
 		height: 89.5vh;
 	}
 
-	#diverges {
+	/*#diverges {
 		overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
         @apply(--layout-horizontal);
 
         @apply(--layout-around-justified);
         @apply(--layout-wrap);
-	}
+	}*/
 
     firebase-collection {
         height: 0;
@@ -101,11 +101,11 @@
         display: none;
     }
 
-    @media (max-width:1279px) {
+    /*@media (max-width:1279px) {
         #diverges {
             @apply(--layout-block);
         }
-    }
+    }*/
 
 	paper-fab {
 	    position: absolute;
@@ -196,7 +196,7 @@
                         </paper-material>
                     </template>
 
-                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge" sort="">
+                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge" sort="_computeSort">
                         <script type="text/javascript">
                             //console.log({{this.diverges}});
                             // var comments = this.diverge.comments;
@@ -259,7 +259,7 @@ Polymer({
         divergesOrd: {
             type: Object,
             value: [],
-            observer: 'divergesChanged'
+            // observer: 'divergesChanged'
         },
         // counter: {
         //     type: Number,
@@ -285,11 +285,13 @@ Polymer({
     diverges_URL: function(dbref) {
         return dbref+"/diverges";
     },
-    divergesChanged: function() {
+    _computeSort: function() {
+        console.log("reversing");
         if (this.showCompile) {
-            console.log("reversing");
-            this.divergesOrd.reverse();
+
+
         }
+        this.divergesOrd = this.divergesOrd.slice().reverse();
     },
     postDiverge: function(e) {  // Add a new task
         var tsk = this.$.dIdea.value;
