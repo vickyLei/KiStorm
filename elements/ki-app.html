@@ -106,7 +106,7 @@
             <!-- Diverge/Converge Embed -->
             <template is="dom-if" if="{{!workshops.length}}">
                 <paper-material class="no-ws">
-                    <paper-item>No workshops have been created. Use the sidebar to add a workshop!</paper-item>
+                    <paper-item>No pages have been created. Use the sidebar to add a page!</paper-item>
                 </paper-material>
             </template>
             <div id="embedTarget">
@@ -128,7 +128,7 @@
                 <paper-button on-tap="openNewWS">Create New...</paper-button>
             </app-drawer>
             <paper-dialog id="newWSDialog" with-backdrop>
-                <h2>Create a New Workshop</h2>
+                <h2>Create a New Page</h2>
                 <paper-radio-group id="wsTypeGroup" selected="diverge" on-iron-select="changedRadio">
                     <paper-radio-button name="diverge">Diverge</paper-radio-button>
                     <paper-radio-button name="converge" disabled="[[!divergeExists]]">Converge</paper-radio-button>
@@ -147,7 +147,7 @@
                     </paper-dropdown-menu-light>
                     <!-- </paper-dialog-scrollable> -->
                 </div>
-                <paper-input id="wsName" label="Workshop name..."></paper-input>
+                <paper-input id="wsName" label="Page name..."></paper-input>
                 <div class="buttons">
                     <!-- <paper-button dialog-dismiss>Cancel</paper-button> -->
                     <paper-button dialog-confirm autofocus on-tap="createNewWS">Create</paper-button>

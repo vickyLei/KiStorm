@@ -196,7 +196,7 @@
                         </paper-material>
                     </template>
 
-                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge" sort="_computeSort">
+                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge" sort="">
                         <script type="text/javascript">
                             //console.log({{this.diverges}});
                             // var comments = this.diverge.comments;
@@ -259,7 +259,11 @@ Polymer({
         divergesOrd: {
             type: Object,
             value: [],
-            // observer: 'divergesChanged'
+            observer: 'divergesChanged'
+        },
+        sortCount: {
+            type: Number,
+            value: 0
         },
         // counter: {
         //     type: Number,
@@ -287,11 +291,24 @@ Polymer({
     },
     _computeSort: function() {
         console.log("reversing");
-        if (this.showCompile) {
-
-
+        this.sortCount++
+        if (this.showCompile && this.sortCount == this.divergesOrd.length) {
+            this.divergesOrd = this.divergesOrd.slice().reverse();
+            // this.sortCount = 0;
         }
-        this.divergesOrd = this.divergesOrd.slice().reverse();
+
+    },
+    divergesChanged: function() {
+        console.log("reversing");
+        // this.sortCount++
+        // if (this.showCompile && this.sortCount == this.divergesOrd.length) {
+        //
+        //     // this.sortCount = 0;
+        // }
+        if (this.showCompile) {
+            this.divergesOrd = this.divergesOrd.slice().reverse();
+        }
+        
     },
     postDiverge: function(e) {  // Add a new task
         var tsk = this.$.dIdea.value;
