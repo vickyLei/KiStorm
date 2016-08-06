@@ -86,11 +86,11 @@
             location="https://ki-apps.firebaseio.com/[[dbref]]/workshops"
             data="{{workshops}}">
         </firebase-collection>
-        <firebase-document
+        <!-- <firebase-document
             id="selectedwsquery"
             location="https://ki-apps.firebaseio.com/[[dbref]]/selectedWS"
             data="{{selectedWS}}">
-        </firebase-document>
+        </firebase-document> -->
         <firebase-document
             id="divergeExistsRef"
             location="https://ki-apps.firebaseio.com/[[dbref]]/divergeExists"
@@ -116,7 +116,7 @@
             <!-- App Drawer and Dialog -->
             <app-drawer id="wsDrawer">
                 <paper-toolbar class="drawer-toolbar">
-                    <div class="title">Workshops</div>
+                    <div class="title">Pages</div>
                 </paper-toolbar>
                 <paper-menu id="wsMenu" selected="[[selectedWS]]" on-iron-select="menuSelected">
                 <!-- <paper-menu id="wsMenu" selected="{{selectedWS}}"> -->
@@ -169,9 +169,13 @@ Polymer({
             type: Object,
             observer: 'wsChanged'
         },
+        // selectedWS: {
+        //     type: String,
+        //     observer: 'selectedChanged'
+        // },
         selectedWS: {
-            type: String,
-            observer: 'selectedChanged'
+            type: Number,
+            value: 0
         },
         divergeExists: Boolean,
 
@@ -199,19 +203,24 @@ Polymer({
             this.menuSelected();
         }
     },
-    selectedChanged: function(newData, oldData) {
-        // console.log(newData);
-        var $wsMenu = this.$.wsMenu;
-        $wsMenu.select(newData);
-
-        // Change embedded
-        var $selected = $wsMenu.selectedItem;
-        var ws = this.workshops[newData];
-        this.selectWS(ws);
-    },
+    // selectedChanged: function(newData, oldData) {
+    //     // console.log(newData);
+    //     var $wsMenu = this.$.wsMenu;
+    //     $wsMenu.select(newData);
+    //
+    //     // Change embedded
+    //     var $selected = $wsMenu.selectedItem;
+    //     var ws = this.workshops[newData];
+    //     this.selectWS(ws);
+    // },
     menuSelected: function(e) {
-        var ref = new Firebase("https://ki-apps.firebaseio.com/"+this.dbref);
-        ref.update({"selectedWS":this.$.wsMenu.selected});
+        // var ref = new Firebase("https://ki-apps.firebaseio.com/"+this.dbref);
+        // ref.update({"selectedWS":this.$.wsMenu.selected});
+        var $wsMenu = this.$.wsMenu;
+        var $selected = $wsMenu.selected;
+        var ws = this.workshops[$selected];
+        this.selectWS(ws);
+        this.$.wsDrawer.close();
     },
     selectWS: function(ws) {
         // console.log(ws);

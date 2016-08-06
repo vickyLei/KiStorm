@@ -196,7 +196,7 @@
                         </paper-material>
                     </template>
 
-                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge">
+                    <template is="dom-repeat" items="{{divergesOrd}}" as="diverge" sort="">
                         <script type="text/javascript">
                             //console.log({{this.diverges}});
                             // var comments = this.diverge.comments;
@@ -254,11 +254,12 @@ Polymer({
         },
         diverges: {
             type: Object,
-            value: []
+            value: [],
         },
         divergesOrd: {
             type: Object,
-            value: []
+            value: [],
+            observer: 'divergesChanged'
         },
         // counter: {
         //     type: Number,
@@ -283,6 +284,12 @@ Polymer({
     },
     diverges_URL: function(dbref) {
         return dbref+"/diverges";
+    },
+    divergesChanged: function() {
+        if (this.showCompile) {
+            console.log("reversing");
+            this.divergesOrd.reverse();
+        }
     },
     postDiverge: function(e) {  // Add a new task
         var tsk = this.$.dIdea.value;
