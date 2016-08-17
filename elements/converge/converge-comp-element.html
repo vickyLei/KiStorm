@@ -42,7 +42,8 @@
     .edit {
         display: inline-block;
         float: right;
-        margin-right: 2vw;
+        margin-right: 1vw;
+        margin-left: 3vw;
     }
 
     .done {
@@ -76,7 +77,8 @@
         line-height: 45px;
     }
 
-    .toggleComment {
+    #toggleComment {
+        font-style: italic;
         display: inline-block;
         font-family: 'Roboto';
         font-weight: 300;
@@ -144,8 +146,8 @@
     }
 
     .diverge-label {
-        /*width: 80%;
-        display: inline-block;*/
+        width: 82%;
+        display: inline-block;
         --paper-input-container-disabled: {
             opacity: 1;
         };
@@ -158,8 +160,9 @@
         padding-top: 0;
         padding-bottom: 0;
         padding: 0 10px;
-        margin: 0 1vw 0 1vw;
-        border: 1px dashed #212121;
+        float: right;
+        margin: 0 1vw 0 0vw;
+        /*border: 1px dashed #212121;*/
         display: inline-block;
         vertical-align: middle;
         line-height: 30px;
@@ -210,9 +213,7 @@
             <paper-input id="edit" hidden="{{!editing}}" value="{{task}}"></paper-input> -->
             <!-- <paper-item class="info">{{date}}</paper-item> -->
 
-            <!-- <button on-tap="toggleComments">Show Comments</button> -->
-            <paper-button class="toggleComment" on-tap="toggleComments">[[commentToggleButtonTitle]]</paper-button>
-            <paper-item class="commentCount">({{commentKeys.length}})</paper-item>
+            <paper-button id="toggleComment" on-tap="toggleComments"><iron-icon id="toggleCommentIcon" icon="icons:expand-more"></iron-icon>({{commentKeys.length}})</paper-button>
             <!-- <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
             <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab> -->
             <br />

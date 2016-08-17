@@ -37,9 +37,28 @@
 		margin: 0;
 		width: 100%;
 		max-width: none;
-        min-height: 80px;
+        min-height: 50px;
 		border-bottom: 1px solid #ccc;
 	}
+
+    #descriptionBox {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 50px;
+		border-bottom: 1px solid #ccc;
+        text-align: center;
+	}
+
+    #description {
+        width: 100%;
+        text-align: center;
+        color: #3f3f3f;
+        display: inline-block;
+        line-height: 50px;
+        padding: 0;
+        margin: 0;
+    }
 
     /*paper-item {
         --paper-item-focused: none;
@@ -51,7 +70,7 @@
 	}
 
     paper-textarea {
-		margin: 0 8vw 0 4vw;
+		margin: 0 2vw 0 2vw;
 		padding: 0;
 	}
 
@@ -64,10 +83,18 @@
 	}
 
 	#diverges {
-		overflow-y: scroll;
-        -webkit-overflow-scrolling: touch;
-		height: 89.5vh;
+		/*overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;*/
+		/*height: 85%;*/
 	}
+
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
 
 	/*#diverges {
 		overflow-y: scroll;
@@ -100,7 +127,10 @@
 	.main-panel {
 		background-color: #eee;
 		/*height: 100vh;*/
-		overflow-y: hidden;
+		/*overflow-y: hidden;*/
+        /*overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        height: 100vh;*/
 	}
 
 	.task-empty paper-item {
@@ -118,15 +148,32 @@
 		background:#D32F2F;
 	}
 
+    .add {
+        position: absolute;
+        bottom: 2vh;
+        right: 3vw;
+    }
+
+    #divText {
+        width: 300px;
+    }
+
+    *@media (max-width:375px) {
+        #divText {
+            width: 200px;
+        }
+    }
+
     </style>
     <template>
         <div class="main-panel">
             <!-- To create a new Todo -->
-            <paper-material id="divergeEntry" elevation="2">
-                <!-- <paper-input id="dIdea" label="Diverge Idea"></paper-input> -->
+            <!-- <paper-material id="divergeEntry" elevation="2">
                 <paper-textarea id="dIdea" on-change="dIdeaChanged" label="New Diverge..."></paper-textarea>
-                <!-- <paper-input id="dUser" char-counter label="Username" maxlength="100"></paper-input> -->
                 <paper-fab hidden="{{!showAdd}}" icon="icons:done" mini on-tap="postDiverge"></paper-fab>
+            </paper-material> -->
+            <paper-material id="descriptionBox" elevation="2">
+                <paper-item id="description">[[description]]</paper-item>
             </paper-material>
             <paper-dialog id="emptyError">
                 <h2>The diverge idea is empty!</h2>
@@ -135,6 +182,15 @@
                 </paper-dialog-scrollable>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Dismiss</paper-button>
+                </div>
+            </paper-dialog>
+
+            <paper-dialog id="newDiverge" with-backdrop>
+                <h2>Create a new Diverge</h2>
+                <paper-textarea id="divText" label="New Diverge.." autofocus></paper-textarea>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Cancel</paper-button>
+                    <paper-button on-tap="postDiverge">Create</paper-button>
                 </div>
             </paper-dialog>
 
@@ -170,6 +226,7 @@
                 <!-- </template> -->
 
             </div>
+            <paper-fab class="add" icon="icons:add" on-tap="doNew" elevation="3" mini="{{smallScreen}}"></paper-fab>
         </div>
     </template>
 </dom-module>
@@ -182,13 +239,31 @@ Polymer({
         dbref: String,
         token: String,
 
+        description: String,
         diverges: Array,
         counter: Number,
 
-        showAdd: {
+        smallScreen: {
             type: Boolean,
             value: false
         },
+    },
+    ready: function() {
+        if ($(window).width() <= 375) {
+            console.log("small screen");
+            this.smallScreen = true;
+        } else {
+            this.smallScreen = false;
+        }
+        // window.onResize.listen(resizeContainer);
+    },
+    resizeContainer: function() {
+        if ($(window).width() <= 375) {
+            console.log("small screen");
+            this.smallScreen = true;
+        } else {
+            this.smallScreen = false;
+        }
     },
     counter_URL: function(dbref) {
         return dbref+"/counter";
@@ -196,16 +271,11 @@ Polymer({
     diverges_URL: function(dbref) {
         return dbref+"/diverges";
     },
-    dIdeaChanged: function(e) {
-        var txt = this.$.dIdea.value;
-        if (txt == "" || txt == null) {
-            this.showAdd = false;
-        } else {
-            this.showAdd = true;
-        }
+    doNew: function(e) {
+        this.$.newDiverge.open();
     },
     postDiverge: function(e) {  // Add a new task
-        var tsk = this.$.dIdea.value;
+        var tsk = this.$.divText.value;
         // Use JWT username
         var usr = this.uid;
         if (tsk == "" || tsk == null) {
@@ -219,15 +289,23 @@ Polymer({
         if (usr==""){
             usr = "Anonymous";
         }
-        this.$.dIdea.value = "";
+        this.$.divText.value = "";
         this.showAdd = false;
 
         var divergeData = {"task": tsk, "user":usr, "rid": this.counter+1, "time": Date.now(), "comments": []};
         var cRef = new Firebase(this.dbref);
         cRef.update({"counter":this.counter+1});
         this.$.firebaseref.add(divergeData);
+        this.$.newDiverge.close();
     },
-
+    // $(window).resize(function() {
+    //     if ($(window).width() <= 375) {
+    //         console.log("small screen");
+    //         this.smallScreen = true;
+    //     } else {
+    //         this.smallScreen = false;
+    //     }
+    // });
 });
 </script>
 </html>

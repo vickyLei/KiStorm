@@ -4,7 +4,10 @@
     <link href="../bower_components/polymer/polymer.html" rel="import">
     <link href="../bower_components/app-layout/app-layout.html" rel="import" />
     <link href="../bower_components/paper-toolbar/paper-toolbar.html" rel="import" />
+    <link href="../bower_components/iron-icon/iron-icon.html" rel="import">
+    <link href="../bower_components/paper-button/paper-button.html" rel="import" />
     <link href="../bower_components/iron-icons/iron-icons.html" rel="import">
+    <link href="../bower_components/iron-icons/social-icons.html" rel="import">
     <!-- <link href="../bower_components/iron-icon/iron-icon.html" rel="import"> -->
     <link href="../bower_components/paper-icon-button/paper-icon-button.html" rel="import" />
     <link href="../bower_components/paper-menu/paper-menu.html" rel="import" />
@@ -55,7 +58,7 @@
     .app-container {
         background: #eee;
         height: 100vh;
-        /*overflow-y: hidden;*/
+        overflow-y: hidden;
     }
 
     .no-ws paper-item {
@@ -77,6 +80,19 @@
             background: transparent;
             opacity: 1;
         };
+    }
+    #embedTarget {
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        height: 91.5vh;
+    }
+    #searchDialog {
+        position: fixed;
+        top: 24px;
+        right: 16px;
+        /*width: 300px;
+        height: 300px;*/
+        overflow: auto;
     }
     </style>
     <template>
@@ -100,7 +116,13 @@
         <div class="app-container">
             <app-toolbar>
                 <paper-icon-button icon="menu" on-tap="toggleDrawer"></paper-icon-button>
-                <div main-title>KiApps</div>
+                <div main-title id="pageTitle">KiApps</div>
+                <paper-icon-button icon="social:person"></paper-icon-button>
+                <paper-icon-button icon="social:people"></paper-icon-button>
+                <!-- <paper-input type="search" label="Search...">
+                    <paper-icon-button suffix icon="search"></paper-icon-button>
+                </paper-input> -->
+                <paper-icon-button icon="search" on-tap="openBy"></paper-icon-button>
             </app-toolbar>
 
             <!-- Diverge/Converge Embed -->
@@ -148,9 +170,17 @@
                     <!-- </paper-dialog-scrollable> -->
                 </div>
                 <paper-input id="wsName" label="Page name..."></paper-input>
+                <paper-input id="wsDesc" label="Page Description..."></paper-input>
                 <div class="buttons">
                     <!-- <paper-button dialog-dismiss>Cancel</paper-button> -->
                     <paper-button dialog-confirm autofocus on-tap="createNewWS">Create</paper-button>
+                </div>
+            </paper-dialog>
+            <paper-dialog id="searchDialog" no-overlap>
+                <paper-input label="Search..."></paper-input>
+                <div class="buttons">
+                    <paper-button dialog-dismiss>Done</paper-button>
+                    <!-- <paper-button dialog-confirm autofocus on-tap="createNewWS">Create</paper-button> -->
                 </div>
             </paper-dialog>
         </div>
@@ -184,6 +214,10 @@ Polymer({
             value: true,
         },
         divergeCopies: Array,
+    },
+    openBy: function(element) {
+        this.$.searchDialog.positionTarget = element;
+        this.$.searchDialog.open();
     },
     toggleDrawer: function() {
         this.$.wsDrawer.toggle();
@@ -224,17 +258,19 @@ Polymer({
     },
     selectWS: function(ws) {
         // console.log(ws);
-        console.log(this.workshops);
+        // console.log(this.workshops);
         if (ws) {
             var $embedTarget = this.$.embedTarget;
+            var $pageTitle = this.$.pageTitle;
+            $pageTitle.textContent = ws.name;
             if (ws.type == "diverge") {
                 var divergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
 
-                $('#embedTarget').html('<diverge-app dbref="'+divergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'"></diverge-app>');
+                $('#embedTarget').html('<diverge-app dbref="'+divergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'"></diverge-app>');
             } else if (ws.type == "converge") {
                 var convergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
 
-                $('#embedTarget').html('<converge-app dbref="'+convergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'"></converge-app>');
+                $('#embedTarget').html('<converge-app dbref="'+convergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'"></converge-app>');
             }
         }
     },
@@ -244,6 +280,7 @@ Polymer({
     createNewWS: function() {
         // this.info();
         var name = this.$.wsName.value;
+        var desc = this.$.wsDesc.value;
         var id = name.replace(/\s+/g, '-').toLowerCase();
         // Use JWT username
         var type = this.$.wsTypeGroup.selected;
@@ -263,19 +300,24 @@ Polymer({
         }
         var usr = this.uid;
         if (name=="") {
-            alert("Group name is Empty!");
+            alert("Page name is Empty!");
+            return;
+        }
+        if (desc=="") {
+            alert("Page description is Empty!");
             return;
         }
         if (!(this.level == "admin")) {
-            alert("You don't have acces to make new groups!");
+            alert("You don't have acces to make new pages!");
             return;
         }
         if (usr == ""){
             usr = "Anonymous";
         }
         this.$.wsName.value = "";
+        this.$.wsDesc.value = "";
 
-        var wsData = {"type": type, "user":usr, "id": id,"name": name, "dateCreated": Date.now(), "counter": counter, "diverges":diverges};
+        var wsData = {"type": type, "user":usr, "id": id,"name": name, "wsDesc":desc, "dateCreated": Date.now(), "counter": counter, "diverges":diverges};
         var response = this.$.wsquery.add(wsData);
         console.log(response);
         if (response) {

@@ -9,6 +9,7 @@
     <link rel="import" href="../../bower_components/paper-button/paper-button.html">
     <link rel="import" href="../../bower_components/paper-input/all-imports.html">
     <link rel="import" href="../../bower_components/paper-material/paper-material.html">
+    <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
     <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
     <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
     <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
@@ -41,7 +42,8 @@
     .edit {
         display: inline-block;
         float: right;
-        margin-right: 2vw;
+        margin-right: 1vw;
+        margin-left: 3vw;
     }
 
     .done {
@@ -75,7 +77,8 @@
         line-height: 45px;
     }
 
-    .toggleComment {
+    #toggleComment {
+        font-style: italic;
         display: inline-block;
         font-family: 'Roboto';
         font-weight: 300;
@@ -125,7 +128,7 @@
         margin: 0 2vw;
     }
     paper-textarea {
-        margin: 0 2vw 0 1vw;
+        margin: 0 1vw 0 1vw;
     }
 
     #newComment {
@@ -143,8 +146,8 @@
     }
 
     .diverge-label {
-        /*width: 80%;
-        display: inline-block;*/
+        width: 82%;
+        display: inline-block;
         --paper-input-container-disabled: {
             opacity: 1;
         };
@@ -157,8 +160,9 @@
         padding-top: 0;
         padding-bottom: 0;
         padding: 0 10px;
-        margin: 0 1vw 0 1vw;
-        border: 1px dashed #212121;
+        float: right;
+        margin: 0 1vw 0 0vw;
+        /*border: 1px dashed #212121;*/
         display: inline-block;
         vertical-align: middle;
         line-height: 30px;
@@ -177,16 +181,17 @@
         <paper-material class="diverge" elevation="1">
             <paper-textarea class="diverge-label" readonly="{{!editing}}" id="divergeText" value="{{task}}"></paper-textarea>
             <paper-item class="rid">{{rid}}</paper-item>
+            <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
+            <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab>
             <!-- <paper-item role="listitem" hidden="{{editing}}" id="task">{{task}}</paper-item>
             <paper-input id="edit" hidden="{{!editing}}" value="{{task}}"></paper-input> -->
             <!-- <paper-item class="info">{{date}}</paper-item> -->
 
             <!-- <button on-tap="toggleComments">Show Comments</button> -->
-            <paper-button class="toggleComment" on-tap="toggleComments">[[commentToggleButtonTitle]]</paper-button>
-            <paper-item class="commentCount">({{commentKeys.length}})</paper-item>
+            <paper-button id="toggleComment" on-tap="toggleComments"><iron-icon id="toggleCommentIcon" icon="icons:expand-more"></iron-icon>({{commentKeys.length}})</paper-button>
+            <!-- <paper-item class="commentCount">({{commentKeys.length}})</paper-item> -->
 
-            <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
-            <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab>
+
 
             <iron-collapse id="commentsCollapse" noAnimation>
                 <div>
@@ -258,10 +263,13 @@
         }
     },
     toggleComments: function(e) {
+        var $toggleCommentIcon = this.$.toggleCommentIcon;
         if (!this.commentsOpen) {
             this.commentToggleButtonTitle = "Hide Comments";
+            $toggleCommentIcon.icon = "icons:expand-less";
         } else {
             this.commentToggleButtonTitle = "Show Comments";
+            $toggleCommentIcon.icon = "icons:expand-more";
         }
         this.commentsOpen = !this.commentsOpen;
         this.$.commentsCollapse.toggle();

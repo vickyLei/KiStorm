@@ -34,6 +34,23 @@
 		background-color: #fafafa;
 	}
 
+    #descriptionBox {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 50px;
+		border-bottom: 1px solid #ccc;
+        text-align: center;
+	}
+
+    #description {
+        display: inline-block;
+        width: 75%;
+        text-align: center;
+        color: #3f3f3f;
+        line-height: 50px;
+    }
+
 	#convergeIntro {
 		margin: 0;
 		width: 100%;
@@ -81,9 +98,9 @@
 	}
 
 	#diverges {
-		overflow-y: scroll;
+		/*overflow-y: scroll;
         -webkit-overflow-scrolling: touch;
-		height: 89.5vh;
+		height: 80.5vh;*/
 	}
 
 	/*#diverges {
@@ -117,7 +134,9 @@
 	.main-panel {
 		background-color: #eee;
 		/*height: 100vh;*/
-		overflow-y: hidden;
+        /*overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        height: 91.5vh;*/
 	}
 
 	.task-empty paper-item {
@@ -159,8 +178,8 @@
                 location="{{showCompile_URL(dbref)}}"
                 data="{{showCompile}}"></firebase-document>
 
-            <paper-material id="convergeIntro" elevation="1">
-                <p id="introHeader">Converge on these ideas by voting!</p>
+            <paper-material id="descriptionBox" elevation="1">
+                <paper-item id="description">[[description]]</paper-item>
                 <paper-button id="compile" hidden="{{showCompile}}" on-tap="doCompile">Compile</paper-button>
                 <paper-button id="vote" hidden="{{!showCompile}}" on-tap="toggleCompile">Vote</paper-button>
             </paper-material>
@@ -252,6 +271,7 @@ Polymer({
             type: String,
             value: ""
         },
+        description: String,
         diverges: {
             type: Object,
             value: [],
