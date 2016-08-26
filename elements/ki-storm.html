@@ -24,11 +24,13 @@
     <link href="../bower_components/paper-radio-group/paper-radio-group.html" rel="import" />
     <link href="../bower_components/firebase-element/firebase-collection.html" rel="import" />
     <link href="../bower_components/firebase-element/firebase-document.html" rel="import" />
-    <link href="../elements/diverge/diverge-app.html" rel="import" />
-    <link href="../elements/converge/converge-app.html" rel="import" />
+    <link href="../elements/ki-element.html" rel="import" />
+
+    <!-- <link href="../elements/diverge/diverge-app.html" rel="import" /> -->
+    <!-- <link href="../elements/converge/converge-app.html" rel="import" /> -->
     <!-- <link href="../bower_components/paper-icon-button/paper-icon-button-light.html" rel="import" /> -->
 </head>
-<dom-module id="ki-app">
+<dom-module id="ki-storm">
     <style>
     app-toolbar {
         /*background-color: #4285f4;*/
@@ -94,6 +96,149 @@
         height: 300px;*/
         overflow: auto;
     }
+
+    /* Diverge CSS */
+    .list {
+		padding: 0;
+ 		border-right: 1px solid #ccc;
+	}
+
+	.list paper-item {
+		min-height: 80px;
+		border-bottom: 1px solid #dedede;
+		background-color: #fafafa;
+	}
+
+	#divergeEntry {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 50px;
+		border-bottom: 1px solid #ccc;
+	}
+
+    #descriptionBox {
+		margin: 0;
+		width: 100%;
+		max-width: none;
+        min-height: 50px;
+		border-bottom: 1px solid #ccc;
+        text-align: center;
+	}
+
+    #description {
+        width: 100%;
+        text-align: center;
+        color: #3f3f3f;
+        display: inline-block;
+        line-height: 50px;
+        padding: 0;
+        margin: 0;
+    }
+
+    /*paper-item {
+        --paper-item-focused: none;
+    }*/
+
+	paper-input {
+		margin: 0 4vw;
+		padding: 0;
+	}
+
+    paper-textarea {
+		margin: 0 2vw 0 2vw;
+		padding: 0;
+	}
+
+	paper-material {
+		background-color: #fff;
+		max-width: 640px;
+		width: 95%;
+		margin: 25px auto;
+		position: relative;
+	}
+
+	#diverges {
+		/*overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;*/
+		/*height: 85%;*/
+	}
+
+    paper-item {
+        --paper-item-focused-before: {
+            outline: 0;
+            background: transparent;
+            opacity: 1;
+        };
+    }
+
+	/*#diverges {
+		overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        @apply(--layout-horizontal);
+
+        @apply(--layout-around-justified);
+        @apply(--layout-wrap);
+	}*/
+
+    firebase-collection {
+        height: 0;
+        width: 0;
+        display: none;
+    }
+
+    /*@media (max-width:1279px) {
+        #diverges {
+            @apply(--layout-block);
+        }
+    }*/
+
+	paper-fab {
+	    position: absolute;
+	    background: #00BCD4;
+	    bottom: 1.5vh;
+	    right: 2vw;
+    }
+
+	#embedTarget {
+		background-color: #eee;
+		/*height: 100vh;*/
+		/*overflow-y: hidden;*/
+        /*overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        height: 100vh;*/
+	}
+
+	.task-empty paper-item {
+		text-align: center;
+		padding: 25px;
+		color: #6f6f6f;
+	}
+
+    #dUser {
+        width: 75vw;
+        display: inline-block;
+    }
+
+	paper-toolbar {
+		background:#D32F2F;
+	}
+
+    .add {
+        position: absolute;
+        bottom: 2vh;
+        right: 3vw;
+    }
+
+    #divText {
+        width: 300px;
+    }
+
+    @media (max-width:375px) {
+        #divText {
+            width: 200px;
+        }
+    }
     </style>
     <template>
         <firebase-collection
@@ -117,8 +262,8 @@
             <app-toolbar>
                 <paper-icon-button icon="menu" on-tap="toggleDrawer"></paper-icon-button>
                 <div main-title id="pageTitle">KiApps</div>
-                <paper-icon-button icon="social:person" on-tap="setOwnIdeas"></paper-icon-button>
-                <paper-icon-button icon="social:people" on-tap="setAllIdeas"></paper-icon-button>
+                <paper-icon-button icon="social:person"></paper-icon-button>
+                <paper-icon-button icon="social:people"></paper-icon-button>
                 <!-- <paper-input type="search" label="Search...">
                     <paper-icon-button suffix icon="search"></paper-icon-button>
                 </paper-input> -->
@@ -132,7 +277,57 @@
                 </paper-material>
             </template>
             <div id="embedTarget">
+                <!-- To create a new Todo -->
+                <!-- <paper-material id="divergeEntry" elevation="2">
+                    <paper-textarea id="dIdea" on-change="dIdeaChanged" label="New Diverge..."></paper-textarea>
+                    <paper-fab hidden="{{!showAdd}}" icon="icons:done" mini on-tap="postDiverge"></paper-fab>
+                </paper-material> -->
+                <paper-material id="descriptionBox" elevation="2">
+                    <paper-item id="description">[[description]]</paper-item>
+                </paper-material>
+                <paper-dialog id="emptyError">
+                    <h2>The diverge idea is empty!</h2>
+                    <paper-dialog-scrollable>
+                        You need to write an idea before you can add it!
+                    </paper-dialog-scrollable>
+                    <div class="buttons">
+                        <paper-button dialog-dismiss>Dismiss</paper-button>
+                    </div>
+                </paper-dialog>
 
+
+
+                <firebase-document
+                    id="counterRef"
+                    location=""
+                    data="{{counter}}"></firebase-document>
+
+                <div id="diverges">
+                        <!-- <firebase-collection
+                            id="divergeref"
+                            order-by-child="time"
+                            location=""
+                            data="{{diverges}}"></firebase-collection> -->
+                        <template is="dom-if" if="{{!diverges.length}}">
+                            <paper-material class="task-empty">
+                                <paper-item>No diverges have been written. Updates are Real-Time so stay tuned!</paper-item>
+                            </paper-material>
+                        </template>
+
+                        <template is="dom-repeat" items="{{diverges}}" as="diverge">
+                            <ki-element user="{{diverge.user}}" dbref="{{dbref}}" uid="{{uid}}" level="{{level}}" task="{{diverge.task}}" rid="{{diverge.rid}}" time="{{diverge.time}}" diverge="{{diverge}}"></ki-element>
+                            <!-- <h1>[[diverge.__firebaseKey__]]</h1> -->
+                        </template>
+                </div>
+                <paper-fab class="add" icon="icons:add" on-tap="doNew" elevation="3" mini="{{smallScreen}}"></paper-fab>
+                <paper-dialog id="newDiverge" with-backdrop>
+                    <h2>Create a new Diverge</h2>
+                    <paper-textarea id="divText" label="New Diverge.." autofocus></paper-textarea>
+                    <div class="buttons">
+                        <paper-button dialog-dismiss>Cancel</paper-button>
+                        <paper-button on-tap="postDiverge">Create</paper-button>
+                    </div>
+                </paper-dialog>
             </div>
 
             <!-- App Drawer and Dialog -->
@@ -169,7 +364,7 @@
                     </paper-dropdown-menu-light>
                     <!-- </paper-dialog-scrollable> -->
                 </div>
-                <paper-input id="wsName" label="Page name..."></paper-input>
+                <paper-input id="wsName" label="Page name..." max="20"></paper-input>
                 <paper-input id="wsDesc" label="Page Description..."></paper-input>
                 <div class="buttons">
                     <!-- <paper-button dialog-dismiss>Cancel</paper-button> -->
@@ -177,7 +372,7 @@
                 </div>
             </paper-dialog>
             <paper-dialog id="searchDialog" no-overlap>
-                <paper-input label="Search..." on-input="search" value="{{searchValue}}"></paper-input>
+                <paper-input label="Search..." value="{{searchVal}}"></paper-input>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Done</paper-button>
                     <!-- <paper-button dialog-confirm autofocus on-tap="createNewWS">Create</paper-button> -->
@@ -188,7 +383,7 @@
 </dom-module>
 <script>
 Polymer({
-    is: "ki-app",
+    is: "ki-storm",
     properties: {
         uid: String,
         level: String,
@@ -203,10 +398,6 @@ Polymer({
         //     type: String,
         //     observer: 'selectedChanged'
         // },
-        ownIdeas: {
-            type: Boolean,
-            value: 0
-        },
         selectedWS: {
             type: Number,
             value: 0
@@ -218,6 +409,15 @@ Polymer({
             value: true,
         },
         divergeCopies: Array,
+
+        description: String,
+        diverges: Array,
+        counter: Number,
+
+        smallScreen: {
+            type: Boolean,
+            value: false
+        },
     },
     openBy: function(element) {
         this.$.searchDialog.positionTarget = element;
@@ -256,7 +456,6 @@ Polymer({
         // ref.update({"selectedWS":this.$.wsMenu.selected});
         var $wsMenu = this.$.wsMenu;
         var $selected = $wsMenu.selected;
-        this.selectedWS = $selected;
         var ws = this.workshops[$selected];
         this.selectWS(ws);
         this.$.wsDrawer.close();
@@ -270,33 +469,16 @@ Polymer({
             $pageTitle.textContent = ws.name;
             if (ws.type == "diverge") {
                 var divergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
+                // $('#divergeref').attr("location", "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__+"/diverges/");
 
-                $('#embedTarget').html('<diverge-app dbref="'+divergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'" search="{{searchValue}}" ownIdeaOnly="'+this.ownIdeas+'" ></diverge-app>');
+                this.diverges = ws.diverges;
+                // $('#embedTarget').html('<diverge-app dbref="'+divergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'"></diverge-app>');
             } else if (ws.type == "converge") {
                 var convergeWSRef = "https://ki-apps.firebaseio.com/"+this.dbref+"/workshops/"+ws.__firebaseKey__;
 
-                $('#embedTarget').html('<converge-app dbref="'+convergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'"></converge-app>');
+                // $('#embedTarget').html('<converge-app dbref="'+convergeWSRef+'" uid="'+this.uid+'" level="'+this.level+'" token="'+this.token+'" description="'+ws.wsDesc+'"></converge-app>');
             }
         }
-    },
-    search: function(e) {
-        // var val = this.searchValue;
-        console.log("searching...");
-        var ws = this.workshops[this.selectedWS];
-        this.selectWS(ws);
-    },
-    setOwnIdeas: function(e) {
-        // var val = this.searchValue;
-        this.ownIdeas = true;
-        console.log(this.ownIdeas);
-        // var ws = this.workshops[this.selectedWS];
-        // this.selectWS(ws);
-    },
-    setAllIdeas: function(e) {
-        // var val = this.searchValue;
-        this.ownIdeas = false;
-        // var ws = this.workshops[this.selectedWS];
-        // this.selectWS(ws);
     },
     openNewWS: function() {
         this.$.newWSDialog.open();
@@ -366,7 +548,58 @@ Polymer({
         } else {
             this.convergeSelected = true;
         }
-    }
+    },
+
+    ready: function() {
+        if ($(window).width() <= 375) {
+            console.log("small screen");
+            this.smallScreen = true;
+        } else {
+            this.smallScreen = false;
+        }
+        // window.onResize.listen(resizeContainer);
+    },
+    resizeContainer: function() {
+        if ($(window).width() <= 375) {
+            console.log("small screen");
+            this.smallScreen = true;
+        } else {
+            this.smallScreen = false;
+        }
+    },
+    counter_URL: function(dbref) {
+        return dbref+"/counter";
+    },
+    diverges_URL: function(dbref) {
+        return dbref+"/diverges";
+    },
+    doNew: function(e) {
+        this.$.newDiverge.open();
+    },
+    postDiverge: function(e) {  // Add a new task
+        var tsk = this.$.divText.value;
+        // Use JWT username
+        var usr = this.uid;
+        if (tsk == "" || tsk == null) {
+            alert("Diverge is Empty!");
+            return;
+        }
+        if (!(this.level == "write" || this.level == "admin")) {
+            alert("You don't have acces to write ideas!");
+            return;
+        }
+        if (usr==""){
+            usr = "Anonymous";
+        }
+        this.$.divText.value = "";
+        this.showAdd = false;
+
+        var divergeData = {"task": tsk, "user":usr, "rid": this.counter+1, "time": Date.now(), "comments": []};
+        var cRef = new Firebase(this.dbref);
+        cRef.update({"counter":this.counter+1});
+        this.$.divergeref.add(divergeData);
+        this.$.newDiverge.close();
+    },
 });
 </script>
 </html>

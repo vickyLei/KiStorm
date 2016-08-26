@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="../../bower_components/polymer/polymer.html" rel="import">
-    <link href="../../elements/converge/converge-comment.html" rel="import">
-    <link rel="import" href="../../bower_components/polymer/polymer.html">
-    <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
-    <link rel="import" href="../../bower_components/paper-item/paper-item.html">
-    <link rel="import" href="../../bower_components/paper-button/paper-button.html">
-    <link rel="import" href="../../bower_components/paper-input/all-imports.html">
-    <link rel="import" href="../../bower_components/paper-material/paper-material.html">
-    <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-    <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
-    <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
-    <link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+    <link href="../bower_components/polymer/polymer.html" rel="import">
+    <link href="../elements/diverge/diverge-comment.html" rel="import">
+    <link rel="import" href="../bower_components/polymer/polymer.html">
+    <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+    <link rel="import" href="../bower_components/paper-item/paper-item.html">
+    <link rel="import" href="../bower_components/paper-button/paper-button.html">
+    <link rel="import" href="../bower_components/paper-input/all-imports.html">
+    <link rel="import" href="../bower_components/paper-material/paper-material.html">
+    <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+    <link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+    <link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+    <link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
 </head>
 
-<dom-module id="converge-comp-element">
+<dom-module id="ki-element">
     <style>
     /* CSS rules for your element */
     .diverge {
@@ -128,7 +128,7 @@
         margin: 0 2vw;
     }
     paper-textarea {
-        margin: 0 2vw 0 1vw;
+        margin: 0 1vw 0 1vw;
     }
 
     #newComment {
@@ -169,34 +169,6 @@
         --paper-item-min-height: 30px;
     }
 
-    .vote-item {
-        display: inline-block;
-        padding-bottom: 0;
-        margin: 0;
-        min-height: 24px;
-        vertical-align: middle;
-    }
-
-    #ratingLabel {
-        font-style: italic;
-
-        color: #696969;
-        padding-top: 0;
-        padding-bottom: 0;
-        padding: 0;
-        margin: 0;
-        display: inline-block;
-        vertical-align: middle;
-        min-height: 24px;
-        /*line-height: 45px;*/
-    }
-
-    #rating {
-        /*width: 75%;*/
-        display: block;
-
-    }
-
     firebase-collection {
         height: 0;
         width: 0;
@@ -209,18 +181,17 @@
         <paper-material class="diverge" elevation="1">
             <paper-textarea class="diverge-label" readonly="{{!editing}}" id="divergeText" value="{{task}}"></paper-textarea>
             <paper-item class="rid">{{rid}}</paper-item>
+            <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
+            <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab>
             <!-- <paper-item role="listitem" hidden="{{editing}}" id="task">{{task}}</paper-item>
             <paper-input id="edit" hidden="{{!editing}}" value="{{task}}"></paper-input> -->
             <!-- <paper-item class="info">{{date}}</paper-item> -->
 
+            <!-- <button on-tap="toggleComments">Show Comments</button> -->
             <paper-button id="toggleComment" on-tap="toggleComments"><iron-icon id="toggleCommentIcon" icon="icons:expand-more"></iron-icon>({{commentKeys.length}})</paper-button>
-            <!-- <paper-fab class="edit" hidden={{editing}}  icon="icons:create" on-tap="doEdit" mini></paper-fab>
-            <paper-fab class="edit" hidden={{!editing}} icon="icons:done"   on-tap="doEdit" mini></paper-fab> -->
-            <br />
-            <!-- Voting slider -->
-            <paper-item class="vote-item">Average Vote:</paper-item>
-            <paper-item id="ratingLabel">{{diverge.averageRating}}</paper-item>
-            <!-- <paper-slider pin id="rating" min="1" max="5" on-change="changeRating"></paper-slider> -->
+            <!-- <paper-item class="commentCount">({{commentKeys.length}})</paper-item> -->
+
+
 
             <iron-collapse id="commentsCollapse" noAnimation>
                 <div>
@@ -234,7 +205,7 @@
                             <paper-item id="noComments">No comments have been written. Updates are Real-Time so stay tuned!</paper-item>
                         </template> -->
                     <template is="dom-repeat" items="{{getKeys(diverge.comments)}}" as="key">
-                        <converge-comment comment="{{getComment(key)}}" dbref="{{dbref}}" username="{{username}}" level="{{level}}" divergeref="{{getKey(diverge)}}" commentref="{{key}}"></converge-comment>
+                        <diverge-comment comment="{{getComment(key)}}" dbref="{{dbref}}" uid="{{uid}}" level="{{level}}" divergeref="{{getKey(diverge)}}" commentref="{{key}}"></diverge-comment>
                     </template>
                 </div>
             </iron-collapse>
@@ -243,48 +214,28 @@
 </dom-module>
 <script>
   Polymer({
-    is: "converge-comp-element",
+    is: "ki-element",
     properties: {
         // declare properties for the element's public API
-        user: {
-            type: String,
-            value: ""
-        },
-        username: {
-            type: String,
-            value: ""
-        },
-        level: {
-            type: String,
-            value: ""
-        },
-        task: {
-            type: String,
-            value: ""
-        },
+        user: String,
+        uid: String,
+        level: String,
+        dbref: String,
+
+        task: String,
         rid: {
             type: Number,
             value: -1
         },
-        date: {
-            type: String,
-            value: new Date().toLocaleString()
-        },
-        time: {
-            type: Number,
-            value: 0
-        },
-        editing: {
-            type: Boolean,
-            value: false
-        },
+        time: Number,
         diverge: {
             type: Object,
             value: {}
         },
-        dbref: {
-            type: String,
-            value: ""
+
+        editing: {
+            type: Boolean,
+            value: false
         },
         commentsOpen: {
             type: Boolean,
@@ -297,51 +248,10 @@
         commentToggleButtonTitle: {
             type: String,
             value: "Show Comments"
-        },
-        ratings: {
-            type: Array,
-            value: []
-        },
-    },
-    ready: function () {
-
-    },
-    attached: function() {
-        this.async(function() {
-            // var $rating = this.$.rating;
-            // var $ratingsLbl = this.$.ratingLabel;
-            // console.log(this.username);
-            // var rating = 1;
-            // if (this.ratings != null) {
-            //     var userData = this.ratings[this.username];
-            //     if (userData != null) {
-            //         rating = this.ratings[this.username]["slider"];
-            //     } else {
-            //         console.log("No Data");
-            //         var ratingsData = {"slider": rating};
-            //         var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
-            //         var ratingsRef = new Firebase(editLoc);
-            //         ratingsRef.set(ratingsData);
-            //     }
-            // } else {
-            //     console.log("No Ratings");
-            //     var ratingsData = {"slider": rating};
-            //     var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
-            //     var ratingsRef = new Firebase(editLoc);
-            //     ratingsRef.set(ratingsData);
-            // }
-            //
-            // $rating.value = rating;
-            // $ratingsLbl.textContent = $rating.value;
-
-
-            // $rating.addEventListener('value-change', function() {
-            //     $ratingsLbl.textContent = $rating.value;
-            // });
-        },1)
+        }
     },
     doEdit: function(e) {
-        if ((this.level == "write" && this.username == this.user) || this.level == "admin") {
+        if ((this.level == "write" && this.uid == this.user) || this.level == "admin") {
             if (this.editing) {
                 // Update firebase
                 var editedTask = this.$.divergeText.value;
@@ -370,9 +280,6 @@
     comments_URL: function(key) {
         return this.dbref+"/diverges/"+key+"/comments";
     },
-    ratings_URL: function(key) {
-        return this.dbref+"/diverges/"+key+"/ratings/"+this.username+"/";
-    },
     getKey: function(dict) {
         return dict.__firebaseKey__;
     },
@@ -397,9 +304,9 @@
         // console.log(this.diverge.__firebaseKey__);
         // console.log(this.diverge.comments.keys);
         var cmt = this.$.newComment.value;
-        // Use JWT username
+        // Use JWT uid
         //var usr = this.$.dUser.value;
-        var usr = this.username;
+        var usr = this.uid;
         if (cmt=="") {
             alert("Comment is Empty!");
             //this.$.emptyError.open();
@@ -413,22 +320,12 @@
             usr = "Anonymous";
         }
         this.$.newComment.value = "";
-        var commentData = {"cmt": cmt, "comment_writer":usr, "editing":false, "time": Date.now()};
+        var commentData = {"cmt": cmt, "comment_writer":usr, "time": Date.now()};
         var editLoc = this.comments_URL(this.diverge.__firebaseKey__);
         var commentsRef = new Firebase(editLoc);
         commentsRef.push(commentData);
         // this.$.commentsref.add(commentData);
     },
-    // changeRating: function(e) {
-    //     // console.log("changed");
-    //     var $rating = this.$.rating;
-    //     var $ratingsLbl = this.$.ratingLabel;
-    //     $ratingsLbl.textContent = $rating.value;
-    //     var ratingsData = {"slider": $rating.value};
-    //     var editLoc = this.ratings_URL(this.diverge.__firebaseKey__);
-    //     var ratingsRef = new Firebase(editLoc);
-    //     ratingsRef.set(ratingsData);
-    // }
-});
+  });
 </script>
 </html>
